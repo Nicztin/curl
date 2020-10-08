@@ -100,7 +100,7 @@ static size_t zstd_version(char *buf, size_t bufsz)
  * zeros in the data.
  */
 
-#define VERSION_PARTS 14 /* number of substrings we can concatenate */
+#define VERSION_PARTS 15 /* number of substrings we can concatenate */
 
 char *curl_version(void)
 {
@@ -143,6 +143,9 @@ char *curl_version(void)
 #endif
 #ifdef USE_LIBRTMP
   char rtmp_version[40];
+#endif
+#ifdef USE_HYPER
+  char hyper_buf[30];
 #endif
   int i = 0;
   int j;
@@ -227,6 +230,10 @@ char *curl_version(void)
               suff);
     src[i++] = rtmp_version;
   }
+#endif
+#ifdef USE_HYPER
+  msnprintf(hyper_buf, sizeof(hyper_buf), "Hyper/%s", hyper_version());
+  src[i++] = hyper_buf;
 #endif
 
   DEBUGASSERT(i <= VERSION_PARTS);
