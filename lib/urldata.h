@@ -132,6 +132,7 @@ typedef ssize_t (Curl_recv)(struct connectdata *conn, /* connection data */
 #include "wildcard.h"
 #include "multihandle.h"
 #include "quic.h"
+#include "c-hyper.h"
 
 #ifdef HAVE_GSSAPI
 # ifdef HAVE_GSSGNU
@@ -1915,6 +1916,9 @@ struct Curl_easy {
   iconv_t inbound_cd;          /* for translating from the network encoding */
   iconv_t utf8_cd;             /* for translating to UTF8 */
 #endif /* CURL_DOES_CONVERSIONS && HAVE_ICONV */
+#ifdef USE_HYPER
+  struct hyptransfer hyp;
+#endif
   unsigned int magic;          /* set to a CURLEASY_MAGIC_NUMBER */
 };
 
