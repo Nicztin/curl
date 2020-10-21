@@ -118,6 +118,14 @@ typedef ssize_t (Curl_recv)(struct connectdata *conn, /* connection data */
                             size_t len,               /* max amount to read */
                             CURLcode *err);           /* error to return */
 
+#ifdef USE_HYPER
+typedef CURLcode (*Curl_datastream)(struct Curl_easy *data,
+                                    struct connectdata *conn,
+                                    int *didwhat,
+                                    bool *done,
+                                    int select_res);
+#endif
+
 #include "mime.h"
 #include "imap.h"
 #include "pop3.h"
@@ -1094,6 +1102,10 @@ struct connectdata {
 #ifdef USE_UNIX_SOCKETS
   char *unix_domain_socket;
 #endif
+#ifdef USE_HYPER
+  /* if set, an alternative data transfer function */
+  Curl_datastream datastream;
+#endif
 };
 
 /* The end of connectdata. */
@@ -1187,17 +1199,6 @@ struct Progress {
   BIT(callback);  /* set when progress callback is used */
   BIT(is_t_startransfer_set);
 };
-
-typedef enum {
-  HTTPREQ_NONE, /* first in list */
-  HTTPREQ_GET,
-  HTTPREQ_POST,
-  HTTPREQ_POST_FORM, /* we make a difference internally */
-  HTTPREQ_POST_MIME, /* we make a difference internally */
-  HTTPREQ_PUT,
-  HTTPREQ_HEAD,
-  HTTPREQ_LAST /* last in list */
-} Curl_HttpReq;
 
 typedef enum {
     RTSPREQ_NONE, /* first in list */

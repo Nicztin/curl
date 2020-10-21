@@ -32,8 +32,15 @@ struct hyptransfer {
   hyper_waker *write_waker;
   hyper_waker *read_waker;
   const hyper_executor *exec;
-  hyper_task *handshake;
+  bool init;
 };
+
+CURLcode Curl_hyper_header(struct Curl_easy *data, hyper_headers *headers,
+                           const char *line);
+void Curl_hyper_done(struct Curl_easy *);
+
+#else
+#define Curl_hyper_done(x)
 
 #endif /* !defined(CURL_DISABLE_HTTP) && defined(USE_HYPER) */
 #endif /* HEADER_CURL_HYPER_H */

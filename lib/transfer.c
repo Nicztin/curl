@@ -1247,6 +1247,10 @@ CURLcode Curl_readwrite(struct connectdata *conn,
     return CURLE_SEND_ERROR;
   }
 
+#ifdef USE_HYPER
+  if(conn->datastream)
+    return conn->datastream(data, conn, &didwhat, done, select_res);
+#endif
   /* We go ahead and do a read if we have a readable socket or if
      the stream was rewound (in which case we have data in a
      buffer) */

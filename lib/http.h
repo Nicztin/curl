@@ -35,6 +35,17 @@ extern const struct Curl_handler Curl_handler_http;
 extern const struct Curl_handler Curl_handler_https;
 #endif
 
+typedef enum {
+  HTTPREQ_NONE, /* first in list */
+  HTTPREQ_GET,
+  HTTPREQ_POST,
+  HTTPREQ_POST_FORM, /* we make a difference internally */
+  HTTPREQ_POST_MIME, /* we make a difference internally */
+  HTTPREQ_PUT,
+  HTTPREQ_HEAD,
+  HTTPREQ_LAST /* last in list */
+} Curl_HttpReq;
+
 /* Header specific functions */
 bool Curl_compareheader(const char *headerline,  /* line to check */
                         const char *header,   /* header keyword _with_ colon */
@@ -54,11 +65,19 @@ CURLcode Curl_add_timecondition(const struct connectdata *conn,
                                 struct dynbuf *buf);
 CURLcode Curl_add_custom_headers(struct connectdata *conn,
                                  bool is_connect,
-                                 struct dynbuf *req_buffer);
+#ifndef USE_HYPER
+                                 struct dynbuf *req
+#else
+                                 void *headers
+#endif
+  );
 CURLcode Curl_http_compile_trailers(struct curl_slist *trailers,
                                     struct dynbuf *buf,
                                     struct Curl_easy *handle);
 
+void Curl_http_method(struct Curl_easy *data, struct connectdata *conn,
+                      const char **method, Curl_HttpReq *);
+CURLcode Curl_http_useragent(struct Curl_easy *data, struct connectdata *conn);
 CURLcode Curl_http_host(struct Curl_easy *data, struct connectdata *conn);
 
 /* protocol-specific functions set up to be called by the main engine */
@@ -117,7 +136,6 @@ struct HTTP {
   const char *postdata;
 
   const char *p_pragma;      /* Pragma: string */
-  const char *p_accept;      /* Accept: string */
 
   /* For FORM posting */
   curl_mimepart form;
