@@ -118,6 +118,7 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
   hyper_clientconn *client = NULL;
   hyper_request *req = NULL;
   hyper_headers *headers = NULL;
+  CURLcode result;
 
   /* Always consider the DO phase done after this function call, even if there
      may be parts of the request that is not yet sent, since we can deal with
@@ -125,6 +126,11 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
   *done = TRUE;
 
   infof(data, "Time for the Hyper dance\n");
+  memset(h, 0, sizeof(struct hyptransfer));
+
+  result = Curl_http_host(data, conn);
+  if(result)
+    return result;
 
   io = hyper_io_new();
   if(!io) {
@@ -198,14 +204,16 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
     failf(data, "hyper_request_headers\n");
     goto error;
   }
-  /* **WRONG** Host: header logic */
-  if(HYPERE_OK != hyper_headers_add(headers, (uint8_t *)"Host", 4,
-                                    (uint8_t *)conn->host.name,
-                                    strlen(conn->host.name))) {
-    failf(data, "hyper_headers_add\n");
-    goto error;
-  }
 
+  if(data->state.aptr.host) {
+    const char *p = &data->state.aptr.host[6];
+    size_t plen = strlen(p) - 2; /* deduct the CRLF pair */
+    if(HYPERE_OK != hyper_headers_add(headers, (uint8_t *)"Host", 4,
+                                      (uint8_t *)p, plen)) {
+      failf(data, "hyper_headers_add\n");
+      goto error;
+    }
+  }
   sendtask = hyper_clientconn_send(client, req);
   if(!sendtask) {
     failf(data, "hyper_clientconn_send\n");

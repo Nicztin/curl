@@ -59,6 +59,8 @@ CURLcode Curl_http_compile_trailers(struct curl_slist *trailers,
                                     struct dynbuf *buf,
                                     struct Curl_easy *handle);
 
+CURLcode Curl_http_host(struct Curl_easy *data, struct connectdata *conn);
+
 /* protocol-specific functions set up to be called by the main engine */
 CURLcode Curl_http(struct connectdata *conn, bool *done);
 CURLcode Curl_http_done(struct connectdata *, CURLcode, bool premature);
